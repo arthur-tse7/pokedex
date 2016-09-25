@@ -1,0 +1,38 @@
+group 'ca.arttse.pokedex'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = "ca.arttse.pokedex.PokedexApplication"
+
+sourceCompatibility = 1.8
+
+project.ext {
+    dropwizardVersion = '1.0.0'
+    jerseyVersion = '2.23.1'
+    configPath = "$rootProject.projectDir/config/"
+}
+
+run {
+    args 'server', configPath + 'local.yml'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile (
+            'io.dropwizard:dropwizard-core:' + dropwizardVersion,
+            'io.dropwizard:dropwizard-db:' + dropwizardVersion,
+            'io.dropwizard:dropwizard-jdbi:' + dropwizardVersion,
+            'io.dropwizard:dropwizard-testing:' + dropwizardVersion,
+            'postgresql:postgresql:9.1-901-1.jdbc4'
+    )
+    // Required (along with dropwizard-testing) for testing protected resources
+    compile ('org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:' + jerseyVersion){
+        exclude group: 'javax.servlet', module: 'javax.servlet-api'
+        exclude group:  'junit', module: 'junit'
+    }
+}
