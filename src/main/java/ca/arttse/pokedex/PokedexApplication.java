@@ -1,10 +1,12 @@
 package ca.arttse.pokedex;
 
-import ca.arttse.pokedex.health.TemplateHealthCheck;
+import ca.arttse.pokedex.jdbi.PokeInfoDAO;
 import ca.arttse.pokedex.resources.PokedexResource;
 import io.dropwizard.Application;
+import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.skife.jdbi.v2.DBI;
 
 /**
  * Created by Arthur Desktop on 2016-09-25.
@@ -17,7 +19,7 @@ public class PokedexApplication extends Application<PokedexConfiguration> {
 
     @Override
     public String getName() {
-        return "hello-world";
+        return "pokedex";
     }
 
     @Override
@@ -27,13 +29,10 @@ public class PokedexApplication extends Application<PokedexConfiguration> {
 
     @Override
     public void run(PokedexConfiguration configuration, Environment environment) throws Exception {
-        final PokedexResource resource = new PokedexResource(
-                configuration.getTemplate(),
-                configuration.getDefaultName()
-        );
-        final TemplateHealthCheck healthCheck =
-                new TemplateHealthCheck(configuration.getTemplate());
-        environment.healthChecks().register("template", healthCheck);
-        environment.jersey().register(resource);
+        final DBIFactory factory = new DBIFactory();
+        final DBI jdbi = factory.build(environment, configuration.getDataSourceFactory(), "postgresql");
+        final PokeInfoDAO dao = jdbi.onDemand(PokeInfoDAO.class);
+
+        environment.jersey().register(new PokedexResource(dao));
     }
 }
