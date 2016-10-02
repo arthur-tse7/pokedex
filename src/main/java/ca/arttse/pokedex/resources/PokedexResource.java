@@ -1,37 +1,29 @@
 package ca.arttse.pokedex.resources;
 
-import ca.arttse.pokedex.api.Saying;
+import ca.arttse.pokedex.api.PokeInfo;
+import ca.arttse.pokedex.jdbi.PokeInfoDAO;
 import com.codahale.metrics.annotation.Timed;
+import io.dropwizard.jersey.params.LongParam;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by Arthur Desktop on 2016-09-25.
  */
 
-@Path("/hello-world")
+@Path("/pokedex/{dexNo}")
 @Produces(MediaType.APPLICATION_JSON)
 public class PokedexResource {
-    private final String template;
-    private final String defaultName;
-    private final AtomicLong counter;
+    private PokeInfoDAO pokeInfoDAO;
 
-    public PokedexResource(String template, String defaultName) {
-        this.template = template;
-        this.defaultName = defaultName;
-        this.counter = new AtomicLong();
+    public PokedexResource(PokeInfoDAO pokeInfoDAO) {
+        this.pokeInfoDAO = pokeInfoDAO;
     }
 
     @GET
     @Timed
-    public Saying sayHello(@QueryParam("name") Optional<String> name) {
-        final String value = String.format(template, name.orElse(defaultName));
-        return new Saying(counter.incrementAndGet(), value);
+    public PokeInfo getPokeInfo(@PathParam("dexNo") LongParam dexNo) {
+        return pokeInfoDAO.findPokemonById(dexNo.get());
     }
 }
